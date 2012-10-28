@@ -14,7 +14,6 @@ else {
 	$file = 'demo.ts';
 }
 
-$errorInfo = array();
 if (!$errorVersion) {
 	$sourceCode = file_get_contents($file);
 }
@@ -23,7 +22,7 @@ else {
 }
 
 $errorInfo = array();
-$compiledCode = TSCompiler::compileToStr($file, $errorInfo);
+$compiledCode = TSCompiler::compileToStr($file, array(), $errorInfo);
 
 header('Content-Type: text/html; charset=utf-8');
 header("Expires: Tue, 03 Jul 2001 06:00:00 GMT");
@@ -61,19 +60,17 @@ header("Pragma: no-cache");
 		<h1>TSCompiler::compileToStr() demo <small>(<a href="?error=false">normal version</a> &bullet; <a href="?error=true">error version</a>)</small></h1>
 		<hr />
 		
-		<div id="left">
-			<h2>The source code</h2>
-			<pre><?php echo $sourceCode; ?></pre>
-		</div>
+		<h2>The source code</h2>
+		<pre><?php echo $sourceCode; ?></pre>
 		
-		<div id="right">
-			<h2>Compiled code</h2>
-			<pre><?php echo $compiledCode; ?></pre>
-		</div>
+		<hr />
 		
-		<div id="footer">
-			<h2>Error information</h2>
-			<?php print_r($errorInfo); ?>
-		</div>
+		<h2>Error information</h2>
+		<?php print_r($errorInfo); ?>
+		
+		<hr />
+		
+		<h2>Compiled code</h2>
+		<pre><?php echo $compiledCode; ?></pre>
 	</body>
 </html>

@@ -59,9 +59,9 @@ class TSCompiler {
 	  * @return Returns TRUE on success and FALSE if the error stream was not empty, i.e. when an error occured.
 	  * @see TSCompiler::buildCommand()
 	  */
-	public static function compile(Array $options, Array &$errorInfo=array()) {
+	public static function compile(Array $options, &$errorInfo=array()) {
 		$options = array_merge(self::$DEFAULT_OPTIONS, $options);
-		
+
 		$descriptorspec = array(
 			0 => array("pipe", "r"), // stdin
 			1 => array("pipe", "w"), // stdout
@@ -77,7 +77,6 @@ class TSCompiler {
 		fclose($pipes[2]);
 		
 		proc_close($process);
-		
 		if (empty($stderr)) {
 			return true;
 		}
@@ -94,25 +93,34 @@ class TSCompiler {
 	  * @return Returns TRUE on success and FALSE if the error stream was not empty, i.e. when an error occured.
 	  * @see TSCompiler::compile()
 	  */
-	public static function compileToStr($file, &$errorInfo=array()) {
+	public static function compileToStr($file, $options=array(), &$errorInfo=array()) {
 		if (file_exists($file)) {
 			$file = realpath($file);
 		}
+
+		if (!isset($options['outputFile'])) {
+			$options['outputFile'] = tempnam(self::$TMP_DIR, 'TS_');
+		}
+		$options['inputFile'] = $file;
 		
-		$outputFile = tempnam(self::$TMP_DIR, 'TS_');
-		$options = array(
-			'inputFile' => $file,
-			'outputFile' => $outputFile
-		);
 		
 		if (self::compile($options, $errorInfo)) {
-			$data = file_get_contents($outputFile);
-			unlink($outputFile);
+			$data = file_get_contents($options['outputFile']);
+			unlink($options['outputFile']);
 			return $data;
 		}
 		else {
-			unlink($outputFile);
+			unlink($options['outputFile']);
 			return false;
 		}
+	}
+	
+	public static function compileStr($str, $options=array(), &$errorInfo=array()) {
+		$tmpFile = tempnam(self::$TMP_DIR, 'TS_') . '.ts';
+		file_put_contents($tmpFile, $str);
+
+		$compiledCode = self::compileToStr($tmpFile, $options, $errorInfo);
+		unlink($tmpFile);
+		return $compiledCode;
 	}
 }
