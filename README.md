@@ -8,10 +8,19 @@ You can easily compile TypeScript code on-the-fly with this package.
 
 ## Currently implemented languages
 
-### JavaScript
+### JavaScript / TypeScript
 
-This interface is itself completely written in TypeScript.
+#### Embedding in TypeScript
+
+This interface is itself completely written in TypeScript. Therefore you can also reference the `*.ts` source file in your existing TypeScript project.
+
+Just include this line on top of your file:
+
+`///<reference path="../src/ts-compiler.ts" />`
 <br />
+
+#### Embedding in HTML
+
 You have to include these files in your HTML file:
 <br /><br />
 `<script type="text/javascript" src="typescript.js"></script>`
