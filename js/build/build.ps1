@@ -4,25 +4,30 @@ $jsFiles = @(
 	"../src/ts-compiler.js"
 );
 
-$cmd = "java -jar ClosureCompiler/compiler.jar --language_in ECMASCRIPT5"
+$cmds = @("", "");
+$cmds[0] = "tsc ../src/ts-compiler.ts --out TSCompiler.js";
+$cmds[1] = "java -jar ClosureCompiler/compiler.jar --language_in ECMASCRIPT5"
 
 $jsFiles | % {
-	$cmd += " --js $_";
+	$cmds[1] += " --js $_";
 }
 
-$cmd += " --js_output_file TSCompiler.js"
-Write-Host $cmd
-Invoke-Expression $cmd
+$cmds[1] += " --js_output_file TSCompiler.min.js"
+
 
 $location = Get-Location;
 
 # Generate batch script
 $location = Get-Location;
-[System.IO.File]::WriteAllLines($location.ToString() + ".\build.bat", $cmd)
+[System.IO.File]::WriteAllLines($location.ToString() + ".\build.bat", [string]::Join("`r`n", $cmds));
 
 # Generate bash script
 $bashScript = "#!/bin/bash`r`n";
-$bashScript += $cmd;
+$bashScript += [string]::Join("`n", $cmds)
 
 $location = Get-Location;
-[System.IO.File]::WriteAllLines($location.ToString() + ".\build.sh", $bashScript)
+[System.IO.File]::WriteAllLines($location.ToString() + ".\build.sh", $bashScript);
+
+# Invoke the commands!
+Invoke-Expression $cmds[0];
+Invoke-Expression $cmds[1];
