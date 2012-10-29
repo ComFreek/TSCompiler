@@ -21,10 +21,9 @@ Just include this line on top of your file:
 
 #### Embedding in HTML
 
-You have to include these files in your HTML file:
+Include this single file:
 <br /><br />
-`<script type="text/javascript" src="typescript.js"></script>`
-<br &/>`<script type="text/javascript" src="ts-compiler.js"></script>`
+`<script type="text/javascript" src="js/build/TSCompiler.min.js"></script>`
 <br /><br />
 
 You then can call these functions:
@@ -33,11 +32,11 @@ You then can call these functions:
 - `TSCompiler.runScriptBlock()` and `TSCompiler.runAllScriptBlocks()`
 - `TSCompiler.compileExtern()`
 
-See the provided samples: [URL to be inserted]
+See the provided samples: <https://github.com/ComFreek/TSCompiler/tree/master/js/demo>
 
 ### PHP
 
-This module access the TypeScript compiler on the command line (`tsc`). <br />
+This module accesses the TypeScript compiler on the command line (`tsc`). <br />
 So you have to install TypeScript before using this interface. But that should be very easy if you already have [NodeJS](http://nodejs.org/) (<i>Don't have it yet? Get it!</i>) installed:
 
 `npm install -g typescript`
