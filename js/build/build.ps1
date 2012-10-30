@@ -34,11 +34,11 @@ $location = Get-Location;
 [System.IO.File]::WriteAllLines($location.ToString() + ".\build.bat", [string]::Join("`r`n", $cmds));
 
 # Generate bash script
-$bashScript = "#!/bin/bash`r`n";
-$bashScript += [string]::Join("`n", $cmds)
+$bashScript = "#!/bin/bash`n";
+$bashScript += [string]::Join("`n", $cmds);
+$bashScript += "`n";
 
-$location = Get-Location;
-[System.IO.File]::WriteAllLines($location.ToString() + ".\build.sh", $bashScript);
+[System.IO.File]::WriteAllText($location.ToString() + ".\build.sh", $bashScript);
 
 # Invoke the commands!
 $cmds | % {
