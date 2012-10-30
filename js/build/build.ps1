@@ -2,6 +2,7 @@ param($clean);
 
 if ($clean -eq "clean") {
 	Remove-Item "ts-compiler.js";
+	Remove-Item "ts-compiler.min.js";
 	Remove-Item "TSCompiler.js";
 	Remove-Item "TSCompiler.min.js";
 	Exit;
@@ -13,25 +14,26 @@ $jsFiles = @(
 	"ts-compiler.js"
 );
 
-$cmds = @("", "", "");
+$cmds = @("", "", "", "");
 $cmds[0] = "tsc ../src/ts-compiler.ts --out ts-compiler.js";
-$cmds[1] = "java -jar ClosureCompiler/compiler.jar --compilation_level WHITESPACE_ONLY --formatting PRETTY_PRINT --language_in ECMASCRIPT5";
-$cmds[2] = "java -jar ClosureCompiler/compiler.jar --language_in ECMASCRIPT5";
+$cmds[1] = "java -jar ClosureCompiler/compiler.jar --js " + $jsFiles[1] + " --language_in ECMASCRIPT5 --js_output_file ts-compiler.min.js";
+$cmds[2] = "java -jar ClosureCompiler/compiler.jar --compilation_level WHITESPACE_ONLY --formatting PRETTY_PRINT --language_in ECMASCRIPT5";
+$cmds[3] = "java -jar ClosureCompiler/compiler.jar --language_in ECMASCRIPT5";
 
 $jsFiles | % {
-	$cmds[1] += " --js $_";
 	$cmds[2] += " --js $_";
+	$cmds[3] += " --js $_";
 }
 
-$cmds[1] += " --js_output_file TSCompiler.js"
-$cmds[2] += " --js_output_file TSCompiler.min.js"
+$cmds[2] += " --js_output_file TSCompiler.js"
+$cmds[3] += " --js_output_file TSCompiler.min.js"
 
 
 $location = Get-Location;
 
 # Generate batch script
 $location = Get-Location;
-[System.IO.File]::WriteAllLines($location.ToString() + ".\build.bat", [string]::Join("`r`n", $cmds));
+[System.IO.File]::WriteAllText($location.ToString() + ".\build.bat", [string]::Join(" && ", $cmds));
 
 # Generate bash script
 $bashScript = "#!/bin/bash`n";
