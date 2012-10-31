@@ -5,6 +5,7 @@ if ($clean -eq "clean") {
 	Remove-Item "ts-compiler.min.js";
 	Remove-Item "TSCompiler.js";
 	Remove-Item "TSCompiler.min.js";
+	Remove-Item "TSCompiler-Run.min.js";
 	Exit;
 }
 
@@ -14,19 +15,21 @@ $jsFiles = @(
 	"ts-compiler.js"
 );
 
-$cmds = @("", "", "", "");
+$cmds = @("", "", "", "", "", "");
 $cmds[0] = "tsc ../src/ts-compiler.ts --out ts-compiler.js";
-$cmds[1] = "java -jar ClosureCompiler/compiler.jar --js " + $jsFiles[1] + " --language_in ECMASCRIPT5 --js_output_file ts-compiler.min.js";
-$cmds[2] = "java -jar ClosureCompiler/compiler.jar --compilation_level WHITESPACE_ONLY --formatting PRETTY_PRINT --language_in ECMASCRIPT5";
-$cmds[3] = "java -jar ClosureCompiler/compiler.jar --language_in ECMASCRIPT5";
+$cmds[1] = "tsc ../src/direct-run.ts --out direct-run.js";
+$cmds[2] = "java -jar ClosureCompiler/compiler.jar --js " + $jsFiles[1] + " --language_in ECMASCRIPT5 --js_output_file ts-compiler.min.js";
+$cmds[3] = "java -jar ClosureCompiler/compiler.jar --compilation_level WHITESPACE_ONLY --formatting PRETTY_PRINT --language_in ECMASCRIPT5";
+$cmds[4] = "java -jar ClosureCompiler/compiler.jar --language_in ECMASCRIPT5";
+$cmds[5] = "java -jar ClosureCompiler/compiler.jar --js TSCompiler.js --js direct-run.js --js_output_file TSCompiler-Run.min.js --language_in ECMASCRIPT5";
 
 $jsFiles | % {
-	$cmds[2] += " --js $_";
 	$cmds[3] += " --js $_";
+	$cmds[4] += " --js $_";
 }
 
-$cmds[2] += " --js_output_file TSCompiler.js"
-$cmds[3] += " --js_output_file TSCompiler.min.js"
+$cmds[3] += " --js_output_file TSCompiler.js"
+$cmds[4] += " --js_output_file TSCompiler.min.js"
 
 
 $location = Get-Location;
