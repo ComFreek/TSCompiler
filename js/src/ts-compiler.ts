@@ -26,6 +26,10 @@ module TSCompiler {
     (start: number, len: number, msg: string, block: number): any;
   }
 
+  export interface TypeScriptEmitCallback {
+    (name: string): StringOutputStream;
+  }
+
   export interface ExternCompileCallbackData {
     error?: bool;
     result?: string;
@@ -49,6 +53,7 @@ module TSCompiler {
     */
   export interface CompileOptions {
     units: Unit[];
+    produceDeclarations?: bool;
   }
 
   /**
@@ -59,10 +64,8 @@ module TSCompiler {
       * Logged errors
       */
     public errors: CompileInfoError[] = [];
-    /**
-      * The output stream
-      */
-    public outStream: StringOutputStream = new StringOutputStream();
+
+    public emittedUnits: EmitDataStore = new EmitDataStore();
 
     /**
       * Adds an error to the list.
@@ -97,6 +100,9 @@ module TSCompiler {
       */
     public getErrorCount(): number {
       return this.errors.length;
+    }
+
+    public addOutputUnit() {
     }
   }
 
@@ -133,6 +139,91 @@ module TSCompiler {
   }
 
   /**
+    * Stores the output of TypeScript's emit callback.
+    */
+  class EmitDataStore {
+    /**
+      * Stores the emitted units (files).
+      */
+    private units = {};
+
+    /**
+      * Initializes a default .js unit.
+      */
+    constructor () {
+      this.units[".js"] = new StringOutputStream();
+    }
+
+    /**
+      * Returns the needed callback for TypeScript's emitter.
+      * @return The callback function
+      */
+    public getEmitCallback() : TypeScriptEmitCallback {
+      var $this = this;
+      return (function (name: string): StringOutputStream {
+        return $this.emitCallback.apply($this, [name]);
+      });
+    }
+
+    /**
+      * Returns a StringOutputStream for the given unit name.
+      * This method should only be called by the returned callback from getEmitCallback()!
+      * @param name The unit name
+      * @return A StringOutputStream object whose methods can be called in order to append data to the stream.
+      */
+    private emitCallback(name: string): StringOutputStream {
+      if (typeof this.units[name] == "undefined") {
+        this.units[name] = new StringOutputStream();
+      }
+      return this.units[name];
+    }
+
+    /**
+      * Returns the default stream (i.e. output unit)
+      * @return A StringOutputStream object
+      */
+    public getDefaultStream(): StringOutputStream {
+      return this.units[".js"];
+    }
+
+    /**
+      * Returns the output JS from the default stream
+      * @eturn JavaScript code
+      */
+    public getDefJS(): string {
+      return this.units[".js"].data;
+    }
+
+    /**
+      * Returns the output declaration code from the default decl stream
+      * @return Declaration code
+      */
+    public getDefDecl(): string {
+      if (this.units[".d.ts"]) {
+        return this.units[".d.ts"].data;
+      }
+      return "";
+    }
+
+    /**
+      * Returns a specific unit
+      * @param name The unit name
+      * @return The collected data by its stream.
+      */
+    public getUnit(name: string): string {
+      return this.units[name].data;
+    }
+
+    /**
+      * Returns all unit objects
+      * @return An associative array of units whose keys are the unit names.
+      */
+    public getAllUnits() {
+      return this.units;
+    }
+  }
+
+  /**
     * Compiles units using the supplied options argument.
     * @param options See CompileOptions for all available options.
     * @param cInfo You can pass a CompileInfo object in order to save occurred errors.
@@ -143,7 +234,10 @@ module TSCompiler {
       cInfo = new CompileInfo();
     }
 
-    var compiler = new TypeScript.TypeScriptCompiler(cInfo.outStream);
+    var settings = new TypeScript.CompilationSettings();
+    settings.generateDeclarationFiles = (options.produceDeclarations === true);
+
+    var compiler = new TypeScript.TypeScriptCompiler(cInfo.emittedUnits.getDefaultStream(), null, new TypeScript.NullLogger(), settings);
     
     compiler.parser.errorRecovery = true;
     compiler.setErrorCallback(cInfo.getErrorCallback());
@@ -154,11 +248,9 @@ module TSCompiler {
     }
 
     compiler.typeCheck();
-    compiler.emit(false, function create() {
-      return cInfo.outStream;
-    });
+    compiler.emit(true, cInfo.emittedUnits.getEmitCallback());
 
-    return cInfo.outStream.data;
+    return cInfo.emittedUnits.getDefJS();
   }
 
   /**

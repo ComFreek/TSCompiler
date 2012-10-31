@@ -4,7 +4,7 @@ var TSCompiler;
     var CompileInfo = (function () {
         function CompileInfo() {
             this.errors = [];
-            this.outStream = new StringOutputStream();
+            this.emittedUnits = new EmitDataStore();
         }
         CompileInfo.prototype.addError = function (start, len, msg, block) {
             this.errors.push({
@@ -23,6 +23,8 @@ var TSCompiler;
         CompileInfo.prototype.getErrorCount = function () {
             return this.errors.length;
         };
+        CompileInfo.prototype.addOutputUnit = function () {
+        };
         return CompileInfo;
     })();
     TSCompiler.CompileInfo = CompileInfo;    
@@ -40,11 +42,53 @@ var TSCompiler;
         };
         return StringOutputStream;
     })();    
+    var EmitDataStore = (function () {
+        function EmitDataStore() {
+            this.units = {
+            };
+            this.units[".js"] = new StringOutputStream();
+        }
+        EmitDataStore.prototype.getEmitCallback = function () {
+            var $this = this;
+            return (function (name) {
+                return $this.emitCallback.apply($this, [
+                    name
+                ]);
+            })
+        };
+        EmitDataStore.prototype.emitCallback = function (name) {
+            if(typeof this.units[name] == "undefined") {
+                this.units[name] = new StringOutputStream();
+            }
+            return this.units[name];
+        };
+        EmitDataStore.prototype.getDefaultStream = function () {
+            return this.units[".js"];
+        };
+        EmitDataStore.prototype.getDefJS = function () {
+            return this.units[".js"].data;
+        };
+        EmitDataStore.prototype.getDefDecl = function () {
+            if(this.units[".d.ts"]) {
+                return this.units[".d.ts"].data;
+            }
+            return "";
+        };
+        EmitDataStore.prototype.getUnit = function (name) {
+            return this.units[name].data;
+        };
+        EmitDataStore.prototype.getAllUnits = function () {
+            return this.units;
+        };
+        return EmitDataStore;
+    })();    
     function compile(options, cInfo) {
         if(typeof cInfo == "undefined") {
             cInfo = new CompileInfo();
         }
-        var compiler = new TypeScript.TypeScriptCompiler(cInfo.outStream);
+        var settings = new TypeScript.CompilationSettings();
+        settings.generateDeclarationFiles = (options.produceDeclarations === true);
+        var compiler = new TypeScript.TypeScriptCompiler(cInfo.emittedUnits.getDefaultStream(), null, new TypeScript.NullLogger(), settings);
         compiler.parser.errorRecovery = true;
         compiler.setErrorCallback(cInfo.getErrorCallback());
         for(var i = 0; i < options.units.length; i++) {
@@ -52,10 +96,8 @@ var TSCompiler;
             compiler.addUnit(unit.data, unit.name);
         }
         compiler.typeCheck();
-        compiler.emit(false, function create() {
-            return cInfo.outStream;
-        });
-        return cInfo.outStream.data;
+        compiler.emit(true, cInfo.emittedUnits.getEmitCallback());
+        return cInfo.emittedUnits.getDefJS();
     }
     TSCompiler.compile = compile;
     function compileStr(str, options, cInfo) {
