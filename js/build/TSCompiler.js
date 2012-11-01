@@ -20362,222 +20362,174 @@ var TypeScript;
   TypeScript.stringToLiteral = stringToLiteral
 })(TypeScript || (TypeScript = {}));
 var TSCompiler;
-(function(TSCompiler) {
-  TSCompiler.API_VERSION = 0.1;
-  function compile(options, cInfo) {
-    if(typeof cInfo == "undefined") {
-      cInfo = new TSCompiler.Types.CompileInfo
+(function(c) {
+  function b(e, a) {
+    "undefined" == typeof a && (a = new c.Types.CompileInfo);
+    var d = new TypeScript.CompilationSettings;
+    d.generateDeclarationFiles = !0 === e.produceDeclarations;
+    d = new TypeScript.TypeScriptCompiler(a.emittedUnits.getDefaultStream(), null, new TypeScript.NullLogger, d);
+    d.parser.errorRecovery = !0;
+    d.setErrorCallback(a.getErrorCallback());
+    for(var b = 0;b < e.units.length;b++) {
+      var f = e.units[b];
+      d.addUnit(f.data, f.name)
     }
-    var settings = new TypeScript.CompilationSettings;
-    settings.generateDeclarationFiles = options.produceDeclarations === true;
-    var compiler = new TypeScript.TypeScriptCompiler(cInfo.emittedUnits.getDefaultStream(), null, new TypeScript.NullLogger, settings);
-    compiler.parser.errorRecovery = true;
-    compiler.setErrorCallback(cInfo.getErrorCallback());
-    for(var i = 0;i < options.units.length;i++) {
-      var unit = options.units[i];
-      compiler.addUnit(unit.data, unit.name)
-    }
-    compiler.typeCheck();
-    compiler.emit(true, cInfo.emittedUnits.getEmitCallback());
-    return cInfo.emittedUnits.getDefJS()
+    d.typeCheck();
+    d.emit(!0, a.emittedUnits.getEmitCallback());
+    return a.emittedUnits.getDefJS()
   }
-  TSCompiler.compile = compile;
-  function compileStr(str, options, cInfo) {
-    if(!options) {
-      options = {units:[]}
-    }
-    options.units.push({data:str, name:""});
-    return compile(options, cInfo)
+  function f(e, a, c) {
+    a || (a = {units:[]});
+    a.units.push({data:e, name:""});
+    return b(a, c)
   }
-  TSCompiler.compileStr = compileStr;
-  function runStr(str, options, cInfo) {
-    var code = compileStr(str, options, cInfo);
-    TSCompiler.Helpers.insertScriptBlock(code);
-    return code
-  }
-  TSCompiler.runStr = runStr;
-  function runScriptBlock(block, options, cInfo) {
-    if(typeof block == "string") {
-      block = document.getElementById(block)
-    }
-    if(!block || !block.tagName || block.tagName.toLowerCase() != "script") {
+  function g(a, b, d) {
+    "string" == typeof a && (a = document.getElementById(a));
+    if(!a || !a.tagName || "script" != a.tagName.toLowerCase()) {
       throw Error("Invalid script block.");
     }
-    var result = compileStr(block.innerHTML, options, cInfo);
-    TSCompiler.Helpers.insertScriptBlock(result)
+    a = f(a.innerHTML, b, d);
+    c.Helpers.insertScriptBlock(a)
   }
-  TSCompiler.runScriptBlock = runScriptBlock;
-  function runAllScriptBlocks(allowedTypes, options, cInfo) {
-    if(typeof allowedTypes == "undefined" || allowedTypes === null) {
-      allowedTypes = ["text/typescript", "application/typescript"]
+  function a(a, b, d, g, i) {
+    d || (d = function() {
+    });
+    "undefined" == typeof b && (b = !0);
+    if("undefined" == typeof i || null === i) {
+      i = new c.Types.CompileInfo
     }
-    TSCompiler.Helpers.filterScriptBlocks(allowedTypes, function(block) {
-      if(block.src) {
-        compileExtern(block.src)
-      }else {
-        runScriptBlock(block, options, cInfo)
-      }
-    })
-  }
-  TSCompiler.runAllScriptBlocks = runAllScriptBlocks;
-  function compileExtern(url, run, callback, options, cInfo) {
-    if(!callback) {
-      callback = function() {
-      }
-    }
-    if(typeof run == "undefined") {
-      run = true
-    }
-    if(typeof cInfo == "undefined" || cInfo === null) {
-      cInfo = new TSCompiler.Types.CompileInfo
-    }
-    var xhr = new XMLHttpRequest;
-    xhr.open("GET", url);
-    xhr.onreadystatechange = function() {
-      if(xhr.readyState == 4) {
-        if(xhr.status == 200) {
-          var js = compileStr(xhr.responseText, options, cInfo);
-          if(run) {
-            TSCompiler.Helpers.insertScriptBlock(js);
-            callback({result:js, compileInfo:cInfo})
-          }else {
-            callback({result:js, compileInfo:cInfo})
-          }
+    var h = new XMLHttpRequest;
+    h.open("GET", a);
+    h.onreadystatechange = function() {
+      if(4 == h.readyState) {
+        if(200 == h.status) {
+          var a = f(h.responseText, g, i);
+          b && c.Helpers.insertScriptBlock(a);
+          d({result:a, compileInfo:i})
         }else {
-          callback({error:true})
+          d({error:!0})
         }
       }
     };
-    xhr.send(null)
+    h.send(null)
   }
-  TSCompiler.compileExtern = compileExtern
-})(TSCompiler || (TSCompiler = {}));
-var TSCompiler;
-(function(TSCompiler) {
-  (function(Types) {
-    var CompileInfo = function() {
-      function CompileInfo() {
-        this.errors = [];
-        this.emittedUnits = new EmitDataStore
-      }
-      CompileInfo.prototype.addError = function(start, len, msg, block) {
-        this.errors.push({start:start, len:len, msg:msg, block:block})
-      };
-      CompileInfo.prototype.getErrorCallback = function() {
-        var $this = this;
-        return function() {
-          $this.addError.apply($this, arguments)
-        }
-      };
-      CompileInfo.prototype.getErrorCount = function() {
-        return this.errors.length
-      };
-      CompileInfo.prototype.addOutputUnit = function() {
-      };
-      return CompileInfo
-    }();
-    Types.CompileInfo = CompileInfo;
-    var EmitDataStore = function() {
-      function EmitDataStore() {
-        this.units = {};
-        this.units[".js"] = new StringOutputStream
-      }
-      EmitDataStore.prototype.getEmitCallback = function() {
-        var $this = this;
-        return function(name) {
-          return $this.emitCallback.apply($this, [name])
-        }
-      };
-      EmitDataStore.prototype.emitCallback = function(name) {
-        if(typeof this.units[name] == "undefined") {
-          this.units[name] = new StringOutputStream
-        }
-        return this.units[name]
-      };
-      EmitDataStore.prototype.getDefaultStream = function() {
-        return this.units[".js"]
-      };
-      EmitDataStore.prototype.getDefJS = function() {
-        return this.units[".js"].data
-      };
-      EmitDataStore.prototype.getDefDecl = function() {
-        if(this.units[".d.ts"]) {
-          return this.units[".d.ts"].data
-        }
-        return""
-      };
-      EmitDataStore.prototype.getUnit = function(name) {
-        return this.units[name].data
-      };
-      EmitDataStore.prototype.getAllUnits = function() {
-        return this.units
-      };
-      return EmitDataStore
-    }();
-    Types.EmitDataStore = EmitDataStore;
-    var StringOutputStream = function() {
-      function StringOutputStream() {
-        this.data = ""
-      }
-      StringOutputStream.prototype.Write = function(s) {
-        this.data += s
-      };
-      StringOutputStream.prototype.WriteLine = function(s) {
-        this.data += s + "\n"
-      };
-      StringOutputStream.prototype.Close = function() {
-      };
-      return StringOutputStream
-    }()
-  })(TSCompiler.Types || (TSCompiler.Types = {}));
-  var Types = TSCompiler.Types
-})(TSCompiler || (TSCompiler = {}));
-var TSCompiler;
-(function(TSCompiler) {
-  (function(Helpers) {
-    function insertScriptBlock(content) {
-      var block = document.createElement("script");
-      block.setAttribute("type", "text/javascript");
-      block.innerHTML = content;
-      document.body.appendChild(block)
+  c.API_VERSION = 0.1;
+  c.compile = b;
+  c.compileStr = f;
+  c.runStr = function(a, b, d) {
+    a = f(a, b, d);
+    c.Helpers.insertScriptBlock(a);
+    return a
+  };
+  c.runScriptBlock = g;
+  c.runAllScriptBlocks = function(b, f, d) {
+    if("undefined" == typeof b || null === b) {
+      b = ["text/typescript", "application/typescript"]
     }
-    Helpers.insertScriptBlock = insertScriptBlock;
-    function filterScriptBlocks(types, callback) {
-      var testType = true;
-      var blocks = null;
-      if(document.querySelectorAll) {
-        testType = false;
-        var query = "";
-        for(var i = 0, len = types.length;i < len;i++) {
-          query += 'script[type="' + types[i] + '"]';
-          if(i != len - 1) {
-            query += ","
-          }
-        }
-        blocks = document.querySelectorAll(query)
-      }else {
-        blocks = document.getElementsByTagName("script")
-      }
-      for(var i = 0, len = blocks.length;i < len;i++) {
-        var block = blocks[i];
-        if(testType) {
-          var type = block.getAttribute("type").toLowerCase();
-          var ok = false;
-          for(var j = 0, typeLen = types.length;j < typeLen;j++) {
-            if(type == types[j]) {
-              ok = true;
-              break
-            }
-          }
-          if(!ok) {
-            continue
-          }
-        }
-        callback(block)
-      }
+    c.Helpers.filterScriptBlocks(b, function(b) {
+      b.src ? a(b.src) : g(b, f, d)
+    })
+  };
+  c.compileExtern = a
+})(TSCompiler || (TSCompiler = {}));
+(function(c) {
+  var c = c.Types || (c.Types = {}), b = function() {
+    this.errors = [];
+    this.emittedUnits = new f
+  };
+  b.prototype.addError = function(a, b, c, d) {
+    this.errors.push({start:a, len:b, msg:c, block:d})
+  };
+  b.prototype.getErrorCallback = function() {
+    var a = this;
+    return function() {
+      a.addError.apply(a, arguments)
     }
-    Helpers.filterScriptBlocks = filterScriptBlocks
-  })(TSCompiler.Helpers || (TSCompiler.Helpers = {}));
-  var Helpers = TSCompiler.Helpers
+  };
+  b.prototype.getErrorCount = function() {
+    return this.errors.length
+  };
+  b.prototype.addOutputUnit = function() {
+  };
+  c.CompileInfo = b;
+  var f, b = function() {
+    this.units = {};
+    this.units[".js"] = new g
+  };
+  b.prototype.getEmitCallback = function() {
+    var a = this;
+    return function(b) {
+      return a.emitCallback.apply(a, [b])
+    }
+  };
+  b.prototype.emitCallback = function(a) {
+    "undefined" == typeof this.units[a] && (this.units[a] = new g);
+    return this.units[a]
+  };
+  b.prototype.getDefaultStream = function() {
+    return this.units[".js"]
+  };
+  b.prototype.getDefJS = function() {
+    return this.units[".js"].data
+  };
+  b.prototype.getDefDecl = function() {
+    return this.units[".d.ts"] ? this.units[".d.ts"].data : ""
+  };
+  b.prototype.getUnit = function(a) {
+    return this.units[a].data
+  };
+  b.prototype.getAllUnits = function() {
+    return this.units
+  };
+  f = b;
+  c.EmitDataStore = f;
+  var g, c = function() {
+    this.data = ""
+  };
+  c.prototype.Write = function(a) {
+    this.data += a
+  };
+  c.prototype.WriteLine = function(a) {
+    this.data += a + "\n"
+  };
+  c.prototype.Close = function() {
+  };
+  g = c
+})(TSCompiler || (TSCompiler = {}));
+(function(c) {
+  c = c.Helpers || (c.Helpers = {});
+  c.insertScriptBlock = function(b) {
+    var c = document.createElement("script");
+    c.setAttribute("type", "text/javascript");
+    c.innerHTML = b;
+    document.body.appendChild(c)
+  };
+  c.filterScriptBlocks = function(b, c) {
+    var g = !0, a = null;
+    if(document.querySelectorAll) {
+      for(var g = !1, a = "", e = 0, j = b.length;e < j;e++) {
+        a += 'script[type="' + b[e] + '"]', e != j - 1 && (a += ",")
+      }
+      a = document.querySelectorAll(a)
+    }else {
+      a = document.getElementsByTagName("script")
+    }
+    e = 0;
+    for(j = a.length;e < j;e++) {
+      var d = a[e];
+      if(g) {
+        for(var k = d.getAttribute("type").toLowerCase(), i = !1, h = 0, l = b.length;h < l;h++) {
+          if(k == b[h]) {
+            i = !0;
+            break
+          }
+        }
+        if(!i) {
+          continue
+        }
+      }
+      c(d)
+    }
+  }
 })(TSCompiler || (TSCompiler = {}));
 
