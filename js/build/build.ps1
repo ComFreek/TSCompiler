@@ -16,7 +16,7 @@ $jsFiles = @(
 );
 
 $cmds = @("", "", "", "", "", "");
-$cmds[0] = "tsc ../src/ts-compiler-helpers.ts ../src/ts-compiler-types.ts ../src/ts-compiler.ts --out ts-compiler.js";
+$cmds[0] = "tsc ../src/helpers.ts ../src/types.ts ../src/main.ts --out ts-compiler.js";
 $cmds[1] = "tsc ../src/direct-run.ts --out direct-run.js";
 $cmds[2] = "java -jar ClosureCompiler/compiler.jar --js " + $jsFiles[1] + " --language_in ECMASCRIPT5 --js_output_file ts-compiler.min.js";
 $cmds[3] = "java -jar ClosureCompiler/compiler.jar --compilation_level WHITESPACE_ONLY --formatting PRETTY_PRINT --language_in ECMASCRIPT5";
