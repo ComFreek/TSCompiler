@@ -1,5 +1,5 @@
-///<reference path="ts-compiler-helpers.ts" />
-///<reference path="ts-compiler-types.ts" />
+///<reference path="helpers.ts" />
+///<reference path="types.ts" />
 declare var TypeScript;
 
 /**

@@ -1,4 +1,4 @@
-///<reference path="../src/ts-compiler.ts" />
+///<reference path="../src/main.ts" />
 
 // Support multiline strings!
 // http://typescript.codeplex.com/workitem/293

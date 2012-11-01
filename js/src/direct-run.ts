@@ -1,4 +1,4 @@
-///<reference path="ts-compiler.ts" />
+///<reference path="main.ts" />
 
 // This file is meant to be included with ts-compiler.ts
 // in a special file in the build process,

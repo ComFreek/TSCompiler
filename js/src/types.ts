@@ -1,4 +1,4 @@
-///<reference path="ts-compiler.ts" />
+///<reference path="main.ts" />
 declare var TypeScript;
 
 /**
