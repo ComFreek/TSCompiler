@@ -48,14 +48,14 @@
 			var $txtErrors;
 		
 			function run() {
-				var cInfo = new TSCompiler.CompileInfo();
+				var cInfo = new TSCompiler.Types.CompileInfo();
 				var compiledCode = TSCompiler.runScriptBlock("script1", null, cInfo);
 
 				$txtErrors.value = JSON.stringify(cInfo.errors);
 			}
 			
 			function runAll() {
-				var cInfo = new TSCompiler.CompileInfo();
+				var cInfo = new TSCompiler.Types.CompileInfo();
 				var compiledCode = TSCompiler.runAllScriptBlocks(["owntype"], null, cInfo);
 
 				$txtErrors.value = JSON.stringify(cInfo.errors);

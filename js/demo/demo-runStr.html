@@ -31,7 +31,7 @@ alert(Test.sayHello());</textarea>
 		
 			function compileJS() {
 				var code = $txtCode.value;
-				var cInfo = new TSCompiler.CompileInfo();
+				var cInfo = new TSCompiler.Types.CompileInfo();
 				var compiledCode = TSCompiler.compileStr(code, null, cInfo);
 				
 				$txtCompiledCode.value = compiledCode;
@@ -40,7 +40,7 @@ alert(Test.sayHello());</textarea>
 			
 			function runJS() {
 				var code = $txtCode.value;
-				var cInfo = new TSCompiler.CompileInfo();
+				var cInfo = new TSCompiler.Types.CompileInfo();
 				// We use runStr() instead of compileStr() here!
 				var compiledCode = TSCompiler.runStr(code, null, cInfo);
 				

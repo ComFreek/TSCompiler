@@ -69,14 +69,14 @@ module TSCompiler.DirectRunSystem {
     * @param useCache Specifies whether the function should cache compiled TypeScript sources.
     */
   export function run(useCache: bool = true) {
-    TSCompiler.filterScriptBlocks(allowedTypes, function (block: HTMLScriptElement) {
+    TSCompiler.Helpers.filterScriptBlocks(allowedTypes, function (block: HTMLScriptElement) {
 
       var tsCode = block.innerHTML;
       if (useCache) {
         var jsCode = CacheSystem.getCache(tsCode);
 
         if (jsCode !== false) {
-          TSCompiler.insertScriptBlock(jsCode);
+          TSCompiler.Helpers.insertScriptBlock(jsCode);
         }
         else {
           jsCode = TSCompiler.runStr(tsCode);
