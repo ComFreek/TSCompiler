@@ -137,20 +137,14 @@ var TSCompiler;
         insertScriptBlock(result);
     }
     TSCompiler.runScriptBlock = runScriptBlock;
-    function runAllScriptBlocks(allowedTypes, options, cInfo) {
-        if(typeof allowedTypes == "undefined" || allowedTypes === null) {
-            allowedTypes = [
-                "text/typescript", 
-                "application/typescript"
-            ];
-        }
+    function filterScriptBlocks(types, callback) {
         var testType = true;
         var blocks = null;
         if(document.querySelectorAll) {
             testType = false;
             var query = "";
-            for(var i = 0, len = allowedTypes.length; i < len; i++) {
-                query += "script[type=\"" + allowedTypes[i] + "\"]";
+            for(var i = 0, len = types.length; i < len; i++) {
+                query += "script[type=\"" + types[i] + "\"]";
                 if(i != len - 1) {
                     query += ",";
                 }
@@ -164,8 +158,8 @@ var TSCompiler;
             if(testType) {
                 var type = block.getAttribute("type").toLowerCase();
                 var ok = false;
-                for(var j = 0, typeLen = allowedTypes.length; j < typeLen; j++) {
-                    if(type == allowedTypes[j]) {
+                for(var j = 0, typeLen = types.length; j < typeLen; j++) {
+                    if(type == types[j]) {
                         ok = true;
                         break;
                     }
@@ -174,12 +168,24 @@ var TSCompiler;
                     continue;
                 }
             }
+            callback(block);
+        }
+    }
+    TSCompiler.filterScriptBlocks = filterScriptBlocks;
+    function runAllScriptBlocks(allowedTypes, options, cInfo) {
+        if(typeof allowedTypes == "undefined" || allowedTypes === null) {
+            allowedTypes = [
+                "text/typescript", 
+                "application/typescript"
+            ];
+        }
+        filterScriptBlocks(allowedTypes, function (block) {
             if(block.src) {
                 compileExtern(block.src);
             } else {
                 runScriptBlock(block, options, cInfo);
             }
-        }
+        });
     }
     TSCompiler.runAllScriptBlocks = runAllScriptBlocks;
     function compileExtern(url, run, callback, options, cInfo) {

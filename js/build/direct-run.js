@@ -137,20 +137,14 @@ var TSCompiler;
         insertScriptBlock(result);
     }
     TSCompiler.runScriptBlock = runScriptBlock;
-    function runAllScriptBlocks(allowedTypes, options, cInfo) {
-        if(typeof allowedTypes == "undefined" || allowedTypes === null) {
-            allowedTypes = [
-                "text/typescript", 
-                "application/typescript"
-            ];
-        }
+    function filterScriptBlocks(types, callback) {
         var testType = true;
         var blocks = null;
         if(document.querySelectorAll) {
             testType = false;
             var query = "";
-            for(var i = 0, len = allowedTypes.length; i < len; i++) {
-                query += "script[type=\"" + allowedTypes[i] + "\"]";
+            for(var i = 0, len = types.length; i < len; i++) {
+                query += "script[type=\"" + types[i] + "\"]";
                 if(i != len - 1) {
                     query += ",";
                 }
@@ -164,8 +158,8 @@ var TSCompiler;
             if(testType) {
                 var type = block.getAttribute("type").toLowerCase();
                 var ok = false;
-                for(var j = 0, typeLen = allowedTypes.length; j < typeLen; j++) {
-                    if(type == allowedTypes[j]) {
+                for(var j = 0, typeLen = types.length; j < typeLen; j++) {
+                    if(type == types[j]) {
                         ok = true;
                         break;
                     }
@@ -174,12 +168,24 @@ var TSCompiler;
                     continue;
                 }
             }
+            callback(block);
+        }
+    }
+    TSCompiler.filterScriptBlocks = filterScriptBlocks;
+    function runAllScriptBlocks(allowedTypes, options, cInfo) {
+        if(typeof allowedTypes == "undefined" || allowedTypes === null) {
+            allowedTypes = [
+                "text/typescript", 
+                "application/typescript"
+            ];
+        }
+        filterScriptBlocks(allowedTypes, function (block) {
             if(block.src) {
                 compileExtern(block.src);
             } else {
                 runScriptBlock(block, options, cInfo);
             }
-        }
+        });
     }
     TSCompiler.runAllScriptBlocks = runAllScriptBlocks;
     function compileExtern(url, run, callback, options, cInfo) {
@@ -224,4 +230,71 @@ var TSCompiler;
 })(TSCompiler || (TSCompiler = {}));
 
 ; ;
-TSCompiler.runAllScriptBlocks();
+var TSCompiler;
+(function (TSCompiler) {
+    (function (CacheSystem) {
+        function hashCode(str) {
+            var hash = 0;
+            if(str.length == 0) {
+                return hash;
+            }
+            for(var i = 0, len = str.length; i < len; i++) {
+                var char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return hash;
+        }
+        function setCache(key, value, storage) {
+            if (typeof storage === "undefined") { storage = sessionStorage; }
+            var key = hashCode(key);
+            storage[key] = value;
+        }
+        CacheSystem.setCache = setCache;
+        function getCache(key, storage) {
+            if (typeof storage === "undefined") { storage = sessionStorage; }
+            var key = hashCode(key);
+            if(typeof storage[key] == "undefined") {
+                return false;
+            }
+            return storage[key];
+        }
+        CacheSystem.getCache = getCache;
+    })(TSCompiler.CacheSystem || (TSCompiler.CacheSystem = {}));
+    var CacheSystem = TSCompiler.CacheSystem;
+
+})(TSCompiler || (TSCompiler = {}));
+
+var TSCompiler;
+(function (TSCompiler) {
+    (function (DirectRunSystem) {
+        var allowedTypes = [
+            "text/typescript", 
+            "application/typescript"
+        ];
+        function run(useCache) {
+            if (typeof useCache === "undefined") { useCache = true; }
+            TSCompiler.filterScriptBlocks(allowedTypes, function (block) {
+                var tsCode = block.innerHTML;
+                if(useCache) {
+                    var jsCode = TSCompiler.CacheSystem.getCache(tsCode);
+                    if(jsCode !== false) {
+                        TSCompiler.insertScriptBlock(jsCode);
+                        console.log("from cache!");
+                    } else {
+                        console.log("not from cache!");
+                        jsCode = TSCompiler.runStr(tsCode);
+                        TSCompiler.CacheSystem.setCache(tsCode, jsCode);
+                    }
+                } else {
+                    TSCompiler.runScriptBlock(block);
+                }
+            });
+        }
+        DirectRunSystem.run = run;
+    })(TSCompiler.DirectRunSystem || (TSCompiler.DirectRunSystem = {}));
+    var DirectRunSystem = TSCompiler.DirectRunSystem;
+
+})(TSCompiler || (TSCompiler = {}));
+
+TSCompiler.DirectRunSystem.run();

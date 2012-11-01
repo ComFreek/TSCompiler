@@ -316,30 +316,15 @@ module TSCompiler {
     insertScriptBlock(result);
   }
 
-  /**
-    * Compiles and executes all script blocks filtered by their type attribute and inserts each compiled data into new JavaScript block.
-    * You can also use <script> blocks with the src attribute. The data will be retreived via AJAX.
-    *
-    * @param allowedTypes An array of allowed type attributes. This is by default "text/typescript" and "application/typescript"
-    * @param options Optional options to use
-    * @param cInfo Optional CompileInfo object for retreiving additonal information
-    */
-  export function runAllScriptBlocks(allowedTypes?: string[], options?: CompileOptions, cInfo?: CompileInfo) {
-    if (typeof allowedTypes == "undefined" || allowedTypes === null) {
-      allowedTypes = [
-        "text/typescript",
-        "application/typescript"
-      ]
-    }
-    
+  export function filterScriptBlocks(types: string[], callback: (scriptBlock: HTMLScriptElement) => any) {
     var testType = true;
     var blocks = null;
 
     if (document.querySelectorAll) {
       testType = false;
       var query = "";
-      for (var i = 0, len = allowedTypes.length; i < len; i++) {
-        query += "script[type=\"" + allowedTypes[i] + "\"]";
+      for (var i = 0, len = types.length; i < len; i++) {
+        query += "script[type=\"" + types[i] + "\"]";
         if (i != len - 1) {
           query += ",";
         }
@@ -357,8 +342,8 @@ module TSCompiler {
       if (testType) {
         var type = block.getAttribute("type").toLowerCase();
         var ok = false;
-        for (var j = 0, typeLen = allowedTypes.length; j < typeLen; j++) {
-          if (type == allowedTypes[j]) {
+        for (var j = 0, typeLen = types.length; j < typeLen; j++) {
+          if (type == types[j]) {
             ok = true;
             break;
           }
@@ -369,13 +354,34 @@ module TSCompiler {
         }
       }
       
+      callback(block);
+    }
+  }
+
+  /**
+    * Compiles and executes all script blocks filtered by their type attribute and inserts each compiled data into new JavaScript block.
+    * You can also use <script> blocks with the src attribute. The data will be retreived via AJAX.
+    *
+    * @param allowedTypes An array of allowed type attributes. This is by default "text/typescript" and "application/typescript"
+    * @param options Optional options to use
+    * @param cInfo Optional CompileInfo object for retreiving additonal information
+    */
+  export function runAllScriptBlocks(allowedTypes?: string[], options?: CompileOptions, cInfo?: CompileInfo) {
+    if (typeof allowedTypes == "undefined" || allowedTypes === null) {
+      allowedTypes = [
+        "text/typescript",
+        "application/typescript"
+      ]
+    }
+    
+    filterScriptBlocks(allowedTypes, function (block: HTMLScriptElement) {
       if (block.src) {
         compileExtern(block.src);
       }
       else {
         runScriptBlock(block, options, cInfo);
       }
-    }
+    });
   }
 
   /**

@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>TSCompiler.runScriptBlock() and TSCompiler.runAllScriptBlocks() demo</title>
+	</head>
+	<body>
+		<script type="text/typescript">
+			module Test {
+				export function sayHello(): string {
+					return "Hello World!";
+				}
+			}
+			alert(Test.sayHello());
+		</script>
+    <script src="../build/TSCompiler-Run.min.js"></script>
+	</body>
+</html>
