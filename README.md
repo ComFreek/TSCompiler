@@ -16,7 +16,7 @@ This interface is itself completely written in TypeScript. Therefore you can als
 
 Just include this line on top of your file:
 
-`///<reference path="../src/ts-compiler.ts" />`
+`///<reference path="../src/main.ts" />`
 <br />
 
 #### Embedding in HTML
