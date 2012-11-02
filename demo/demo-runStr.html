@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>TSCompiler.runStr() demo</title>
+	</head>
+	<body>
+		<textarea id="txtCode" rows="10" cols="100">module Test {
+  export function sayHello(): string {
+    return "Hello World!";
+  }
+}
+alert(Test.sayHello());</textarea>
+		
+		<br /><br />
+		<button id="btnCompile">Compile!</button>
+		<button id="btnRun">Compile &amp; execute!</button>
+		
+		<hr />
+		Compiled code:
+		<br />
+		<textarea id="txtCompiledCode" rows="10" cols="100" readonly="readonly"></textarea>
+		
+		<br />
+		<span style="color: red; font-weight: bold">Errors:</span>
+		<br />
+		<textarea id="txtErrors" rows="10" cols="100" readonly="readonly"></textarea>
+		
+		<script>
+			var $txtCompiledCode, $txtCode, $txtErrors;
+		
+			function compileJS() {
+				var code = $txtCode.value;
+				var cInfo = new TSCompiler.Types.CompileInfo();
+				var compiledCode = TSCompiler.compileStr(code, null, cInfo);
+				
+				$txtCompiledCode.value = compiledCode;
+				$txtErrors.value = JSON.stringify(cInfo.errors);
+			}
+			
+			function runJS() {
+				var code = $txtCode.value;
+				var cInfo = new TSCompiler.Types.CompileInfo();
+				// We use runStr() instead of compileStr() here!
+				var compiledCode = TSCompiler.runStr(code, null, cInfo);
+				
+				$txtCompiledCode.value = compiledCode;
+				$txtErrors.value = JSON.stringify(cInfo.errors);
+			}
+		
+			window.addEventListener("load", function () {
+				$txtCode = document.getElementById("txtCode");
+				$txtCompiledCode = document.getElementById("txtCompiledCode");
+				$txtErrors = document.getElementById("txtErrors");
+				
+				// Prevent auto-filling
+				$txtCompiledCode.value = "";
+				$txtErrors.value = "";
+			
+				document.getElementById("btnCompile").addEventListener("click", compileJS);
+				document.getElementById("btnRun").addEventListener("click", runJS);
+			});
+		</script>
+		<script type="text/javascript" src="../build/TSCompiler.min.js"></script>
+	</body>
+</html>

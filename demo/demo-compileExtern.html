@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>TSCompiler.compileExtern() demo</title>
+	</head>
+	<body>
+		<input type="url" id="txtUrl" size="100" value="demo.ts" />
+		<br /><br />
+		<input type="checkbox" id="cbRun"/> Run?
+		<br />
+		<button id="btnRun">Compile &amp; run extern TypeScript file!</button>
+		
+		<hr />		
+		<span style="color: red; font-weight: bold">Errors:</span>
+		<br />
+		<textarea id="txtErrors" rows="10" cols="100" readonly="readonly"></textarea>
+		
+		<script>
+			var $txtUrl, $txtErrors, $cbRun;
+			
+			function runCallback(data) {
+				$txtErrors.value = JSON.stringify(data.compileInfo.errors);
+			}
+			
+			function run() {
+				var compiledCode = TSCompiler.compileExtern($txtUrl.value, (cbRun.checked), runCallback);
+			}
+		
+			window.addEventListener("load", function () {
+				if (window.location.host == "") {
+					alert("This sample does not work using the file:// protocol! Run it from a web server.");
+				}
+			
+				$txtUrl = document.getElementById("txtUrl");
+				$txtErrors = document.getElementById("txtErrors");
+				$cbRun = document.getElementById("cbRun");
+			
+				document.getElementById("btnRun").addEventListener("click", run);
+			});
+		</script>
+		<script type="text/javascript" src="../build/TSCompiler.min.js"></script>
+	</body>
+</html>

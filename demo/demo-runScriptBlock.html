@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>TSCompiler.runScriptBlock() and TSCompiler.runAllScriptBlocks() demo</title>
+	</head>
+	<body>
+		<script type="text/typescript" id="script1">
+			module Test {
+				export function sayHello(): string {
+					return "Hello World!";
+				}
+			}
+			alert(Test.sayHello());
+		</script>
+		
+		<script type="owntype">
+			module Test {
+				export function sayHelloOne(): string {
+					return "Good";
+				}
+			}
+			window.msg = Test.sayHelloOne();
+		</script>
+		
+		<script type="owntype">
+			module Test {
+				export function sayHelloTwo(): string {
+					return " bye!";
+				}
+			}
+			window.msg += Test.sayHelloTwo();
+		</script>
+		
+		<script type="owntype">
+			alert(window.msg);
+		</script>
+
+		<button id="btnRun">Compile &amp; run &lt;script&gt; block!</button>
+		<button id="btnRunAll">Compile &amp; run all &lt;script&gt; blocks with type "owntype"!</button>
+		
+		<hr />		
+		<span style="color: red; font-weight: bold">Errors:</span>
+		<br />
+		<textarea id="txtErrors" rows="10" cols="100" readonly="readonly"></textarea>
+		
+		<script>
+			var $txtErrors;
+		
+			function run() {
+				var cInfo = new TSCompiler.Types.CompileInfo();
+				var compiledCode = TSCompiler.runScriptBlock("script1", null, cInfo);
+
+				$txtErrors.value = JSON.stringify(cInfo.errors);
+			}
+			
+			function runAll() {
+				var cInfo = new TSCompiler.Types.CompileInfo();
+				var compiledCode = TSCompiler.runAllScriptBlocks(["owntype"], null, cInfo);
+
+				$txtErrors.value = JSON.stringify(cInfo.errors);
+			}
+		
+			window.addEventListener("load", function () {
+				$txtErrors = document.getElementById("txtErrors");
+			
+				document.getElementById("btnRun").addEventListener("click", run);
+				document.getElementById("btnRunAll").addEventListener("click", runAll);
+			});
+		</script>
+		<script type="text/javascript" src="../build/TSCompiler.min.js"></script>
+	</body>
+</html>
