@@ -32,7 +32,7 @@ You then can call these functions:
 - `TSCompiler.runScriptBlock()` and `TSCompiler.runAllScriptBlocks()`
 - `TSCompiler.compileExtern()`
 
-See the provided samples: <https://github.com/ComFreek/TSCompiler/tree/master/js/demo>
+See the provided samples: <http://comfreek.github.com/TSCompiler/demo/>
 
 ### PHP
 
