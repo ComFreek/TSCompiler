@@ -1,3 +1,13 @@
+<#
+Build JS files and generate bash and batch script:
+powershell .\build.ps1
+
+Only generate bash and batch script:
+powershell .\build.ps1 -gen true
+
+Only clean up all built/generated JS files:
+powershell .\build.ps1 -clean true
+#>
 param([string]$gen, [string]$clean);
 
 # Indicates that all build commands should be really run
