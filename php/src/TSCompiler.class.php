@@ -50,7 +50,7 @@ class TSCompiler {
 		$cmd .= escapeshellarg($options['inputFile']);
 		return $cmd;
 	}
-	
+
 	/**
 	  * Compiles a given file.
 	  * @param array $options Options. See TSCompiler::buildCommand() for available options.
@@ -75,17 +75,17 @@ class TSCompiler {
 
 		$stderr = stream_get_contents($pipes[2]);
 		fclose($pipes[2]);
-		
+
 		proc_close($process);
 		if (empty($stderr)) {
 			return true;
 		}
 		else {
-			$errorInfo = array('stdout' => $stdout, 'stdin' => $stderr);
+			$errorInfo = array('stdout' => $stdout, 'stderr' => $stderr);
 			return false;
 		}
 	}
-	
+
 	/**
 	  * Compiles a given file and returns the result as a string.
 	  * @param string $file The input file
@@ -102,8 +102,8 @@ class TSCompiler {
 			$options['outputFile'] = tempnam(self::$TMP_DIR, 'TS_');
 		}
 		$options['inputFile'] = $file;
-		
-		
+
+
 		if (self::compile($options, $errorInfo)) {
 			$data = file_get_contents($options['outputFile']);
 			unlink($options['outputFile']);
@@ -114,7 +114,7 @@ class TSCompiler {
 			return false;
 		}
 	}
-	
+
 	public static function compileStr($str, $options=array(), &$errorInfo=array()) {
 		$tmpFile = tempnam(self::$TMP_DIR, 'TS_') . '.ts';
 		file_put_contents($tmpFile, $str);
