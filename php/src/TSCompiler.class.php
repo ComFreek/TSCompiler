@@ -116,7 +116,7 @@ class TSCompiler {
 	}
 
 	public static function compileStr($str, $options=array(), &$errorInfo=array()) {
-		$tmpFile = tempnam(self::$TMP_DIR, 'TS_') . '.ts';
+		$tmpFile = tempnam(self::$TMP_DIR, 'TS_');
 		file_put_contents($tmpFile, $str);
 
 		$compiledCode = self::compileToStr($tmpFile, $options, $errorInfo);
